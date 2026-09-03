@@ -101,5 +101,7 @@ def create_app(network: str | None = None, mock: bool | None = None) -> FastAPI:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
         return {"address": address, "stakes": result}
 
+    return app
+
 
 app = create_app()
