@@ -1,33 +1,138 @@
 {
   "systemSetup": [
-    { "name": "Install uv Package Manager", "command": "curl -fsSL https://astral.sh/uv/install.sh | sh && ln -sf \"$HOME/.local/bin/uv\" /usr/local/bin/uv && ln -sf \"$HOME/.local/bin/uvx\" /usr/local/bin/uvx" },
-    { "name": "Install Docker Tooling", "command": "timeout 180 bash -c \"curl -fsSL https://get.docker.com | sh\" || echo \"Docker install skipped (root required)\"" }
+    {
+      "name": "Install uv Package Manager",
+      "command": "curl -fsSL https://astral.sh/uv/install.sh | sh && ln -sf \"$HOME/.local/bin/uv\" /usr/local/bin/uv && ln -sf \"$HOME/.local/bin/uvx\" /usr/local/bin/uvx"
+    },
+    {
+      "name": "Install Docker Tooling",
+      "command": "timeout 180 bash -c \"curl -fsSL https://get.docker.com | sh\" || echo \"Docker install skipped (root required)\""
+    }
   ],
   "templateName": "custom",
   "projectDependencies": [
-    { "name": "Sync Dev Dependencies", "command": "uv sync --extra dev --dev --extra torch" }
+    {
+      "name": "Sync Dev Dependencies",
+      "command": "uv sync --extra dev --dev --extra torch"
+    },
+    {
+      "name": "Sync App Dev Dependencies",
+      "command": "uv sync --extra dev"
+    }
   ],
   "codeChecks": [
-    { "name": "Ruff Format Check", "command": "uv run ruff format --check bittensor tests" },
-    { "name": "Ruff Lint Check", "command": "uv run ruff check bittensor" },
-    { "name": "Mypy Type Check", "command": "uv run mypy --ignore-missing-imports bittensor/" },
-    { "name": "Unit Tests", "command": "uv run pytest -n 2 tests/unit_tests/ --reruns 3" },
-    { "name": "Integration Tests", "command": "uv run pytest -n 2 tests/integration_tests/ --reruns 3" }
+    {
+      "name": "Ruff Format Check",
+      "command": "uv run ruff format --check bittensor tests"
+    },
+    {
+      "name": "Ruff Lint Check",
+      "command": "uv run ruff check bittensor"
+    },
+    {
+      "name": "Mypy Type Check",
+      "command": "uv run mypy --ignore-missing-imports bittensor/"
+    },
+    {
+      "name": "Unit Tests",
+      "command": "uv run pytest -n 2 tests/unit_tests/ --reruns 3"
+    },
+    {
+      "name": "Integration Tests",
+      "command": "uv run pytest -n 2 tests/integration_tests/ --reruns 3"
+    },
+    {
+      "name": "App Ruff Format Check",
+      "command": "uv run ruff format --check src tests"
+    },
+    {
+      "name": "App Ruff Lint Check",
+      "command": "uv run ruff check src"
+    },
+    {
+      "name": "App Mypy Type Check",
+      "command": "uv run mypy src/"
+    },
+    {
+      "name": "App Tests",
+      "command": "uv run pytest -q"
+    }
   ],
   "buildSteps": [
-    { "name": "Build Distributions", "command": "uv build" }
+    {
+      "name": "Build Distributions",
+      "command": "uv build"
+    },
+    {
+      "name": "Build App Distributions",
+      "command": "uv build"
+    }
   ],
   "runStep": [
-    { "name": "Run Docker Dev Service", "command": "docker compose up --build dev", "port": "8091" },
-    { "name": "Verify SDK Entrypoint", "command": "uv run python -m bittensor --port 8091", "port": "8091" }
+    {
+      "name": "Run Docker Dev Service",
+      "command": "docker compose up --build dev",
+      "port": "8091"
+    },
+    {
+      "name": "Verify SDK Entrypoint",
+      "command": "uv run python -m bittensor --port 8091",
+      "port": "8091"
+    },
+    {
+      "name": "Run App Dev Server",
+      "command": "cd bt-network-api && uv run uvicorn bt_network_api.app:app --host 0.0.0.0 --port 8091",
+      "port": "8091"
+    }
   ],
   "deploySteps": [
-    { "name": "Build Docker Image", "command": "docker build -t bittensor/bittensor:latest ." },
-    { "name": "Publish to PyPI", "command": "uvx twine upload --skip-existing dist/*" }
+    {
+      "name": "Build Docker Image",
+      "command": "docker build -t bittensor/bittensor:latest ."
+    },
+    {
+      "name": "Publish to PyPI",
+      "command": "uvx twine upload --skip-existing dist/*"
+    },
+    {
+      "name": "Publish App to PyPI",
+      "command": "cd bt-network-api && uvx twine upload --non-interactive dist/*"
+    }
   ],
-  "cleanupFiles": [".venv/", "uv.lock", "dist/", "build/", "bittensor.egg-info/", ".pytest_cache/", ".coverage", ".mypy_cache/", ".ruff_cache/", ".hypothesis/", "htmlcov/", "coverage.xml"],
+  "cleanupFiles": [
+    ".venv/",
+    "uv.lock",
+    "dist/",
+    "build/",
+    "bittensor.egg-info/",
+    ".pytest_cache/",
+    ".coverage",
+    ".mypy_cache/",
+    ".ruff_cache/",
+    ".hypothesis/",
+    "htmlcov/",
+    "coverage.xml",
+    "bt-network-api/.venv/",
+    "bt-network-api/uv.lock",
+    "bt-network-api/dist/",
+    "bt-network-api/build/",
+    "bt-network-api/*.egg-info/",
+    "bt-network-api/.pytest_cache/",
+    "bt-network-api/.coverage",
+    "bt-network-api/.mypy_cache/",
+    "bt-network-api/.ruff_cache/",
+    "bt-network-api/htmlcov/",
+    "bt-network-api/coverage.xml"
+  ],
   "packageManager": "uv",
   "envPaths": [
-    { "name": "default", "path": ".env" }
+    {
+      "name": "default",
+      "path": ".env"
+    },
+    {
+      "name": "bt-network-api",
+      "path": "bt-network-api/.env"
+    }
   ]
 }
