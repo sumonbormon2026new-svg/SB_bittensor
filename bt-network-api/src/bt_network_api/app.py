@@ -60,6 +60,7 @@ def create_app(network: str | None = None, mock: bool | None = None) -> FastAPI:
     def _auth(authorization: str | None = Header(default=None)) -> db.ApiKey:
         if not require_auth:
             from datetime import datetime, timezone
+
             return db.ApiKey(  # type: ignore[abstract]
                 id=0,
                 key_prefix="anon",
