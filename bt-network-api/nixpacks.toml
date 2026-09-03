@@ -1,0 +1,7 @@
+providers = ["python@3.11.9"]
+
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.11.9"
+
+[start]
+cmd = "uv run uvicorn --factory --app-dir . bt_network_api.app:create_app --host 0.0.0.0 --port ${PORT:-8091}"

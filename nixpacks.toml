@@ -1,0 +1,9 @@
+[build]
+provider = "nixpacks"
+
+[nixpacks]
+runtime = "python"
+python_version = "311"
+
+[start]
+cmd = "/app/bt-network-api/.venv/bin/python -m uvicorn --factory --app-dir /app/bt-network-api bt_network_api.app:create_app --host 0.0.0.0 --port 8091"
