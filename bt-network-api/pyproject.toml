@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bt-network-api"
-version = "0.1.0"
-description = "FastAPI REST service exposing Bittensor network data via the Bittensor SDK"
+version = "0.2.0"
+description = "FastAPI REST service exposing Bittensor network data via the Bittensor SDK, with persistent caching"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
 license = { file = "LICENSE" }
@@ -13,6 +13,8 @@ dependencies = [
     "bittensor>=10.5.0,<11.0",
     "fastapi>=0.110.1",
     "uvicorn",
+    "sqlalchemy>=2.0,<3.0",
+    "alembic>=1.13,<2.0",
 ]
 
 [project.optional-dependencies]
@@ -21,6 +23,8 @@ dev = [
     "httpx>=0.27.0",
     "ruff>=0.15.12",
     "mypy>=1.20.2",
+    "sqlalchemy>=2.0,<3.0",
+    "alembic>=1.13,<2.0",
 ]
 
 [project.scripts]

@@ -8,13 +8,16 @@ from bt_network_api.app import create_app
 
 
 @pytest.fixture()
-def client() -> TestClient:
-    """A test client backed by a mocked SubstrateInterface.
+def client(monkeypatch, tmp_path) -> TestClient:
+    """Test client with mocked SubstrateInterface + isolated SQLite DB."""
+    db_file = tmp_path / "test.db"
+    monkeypatch.setenv("BT_API_DATABASE_URL", f"sqlite:///{db_file}")
 
-    Patches ``async_substrate_interface.sync_substrate.SubstrateInterface``
-    so that all ``SubtensorApi`` queries resolve to a ``MagicMock`` instead of
-    hitting a live WebSocket endpoint.
-    """
+    import bt_network_api.db as db_mod
+
+    db_mod._engine = None
+    db_mod._SessionLocal = None
+
     mock_substrate = MagicMock(autospec=True)
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr(
@@ -23,7 +26,7 @@ def client() -> TestClient:
             mock_substrate,
         )
         app = create_app(network="local")
-        return TestClient(app)
+        return TestClient(app).__enter__()
 
 
 def test_index(client: TestClient) -> None:
@@ -39,6 +42,21 @@ def test_health(client: TestClient) -> None:
     resp = client.get("/health")
     assert resp.status_code == 200
     assert resp.json() == {"status": "ok"}
+
+
+def test_cache_history_empty(client: TestClient) -> None:
+    resp = client.get("/cache/history")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["count"] == 0
+    assert body["records"] == []
+
+
+def test_cache_refresh(client: TestClient) -> None:
+    resp = client.get("/cache/refresh")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "message" in body
 
 
 @pytest.mark.xfail(reason="SDK mock patch needs conftest wiring across test file boundaries")
