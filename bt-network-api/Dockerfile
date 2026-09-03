@@ -17,7 +17,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 COPY src ./src
 
-RUN uv sync
+RUN uv sync --frozen
 
 ENV BT_API_NETWORK=finney \
     BT_API_MOCK=0 \
@@ -25,6 +25,7 @@ ENV BT_API_NETWORK=finney \
 
 EXPOSE 8091
 
-VOLUME ["/data"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8091}/health || exit 1
 
-CMD ["uv", "run", "uvicorn", "--factory", "--app-dir", ".", "bt_network_api.app:create_app", "--host", "0.0.0.0", "--port", "8091"]
+CMD ["sh", "-c", "uv run uvicorn --factory --app-dir . bt_network_api.app:create_app --host 0.0.0.0 --port ${PORT:-8091}"]
