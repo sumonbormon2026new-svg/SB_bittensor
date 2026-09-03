@@ -4,12 +4,13 @@ import time
 from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 import bittensor as bt
 
 from bt_network_api import db
+from bt_network_api.dashboard import render_dashboard
 from bt_network_api.settings import get_mock, get_network
 
 try:
@@ -98,6 +99,7 @@ def create_app(network: str | None = None, mock: bool | None = None) -> FastAPI:
             "mock": app.state.mock,
             "auth_required": require_auth,
             "endpoints": [
+                "/dashboard",
                 "/health",
                 "/block",
                 "/subnets",
@@ -127,8 +129,8 @@ def create_app(network: str | None = None, mock: bool | None = None) -> FastAPI:
   .badge {{ display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: 500; margin-bottom: 20px; }}
   .badge-version {{ background: #e8f5e9; color: #2e7d32; }}
   .badge-network {{ background: #e3f2fd; color: #1565c0; }}
-  .badge-mock {{ background: {'#fff3e0' if info['mock'] else '#f5f5f5'}; color: {'#e65100' if info['mock'] else '#757575'}; }}
-  .badge-auth {{ background: {'#fce4ec' if info['auth_required'] else '#e8f5e9'}; color: {'#c62828' if info['auth_required'] else '#2e7d32'}; }}
+  .badge-mock {{ background: {"#fff3e0" if info["mock"] else "#f5f5f5"}; color: {"#e65100" if info["mock"] else "#757575"}; }}
+  .badge-auth {{ background: {"#fce4ec" if info["auth_required"] else "#e8f5e9"}; color: {"#c62828" if info["auth_required"] else "#2e7d32"}; }}
   table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
   th {{ text-align: left; padding: 8px 12px; border-bottom: 2px solid #ddd; font-size: 0.85rem; color: #666; text-transform: uppercase; letter-spacing: 0.05em; }}
   td {{ padding: 8px 12px; border-bottom: 1px solid #eee; }}
@@ -150,6 +152,10 @@ def create_app(network: str | None = None, mock: bool | None = None) -> FastAPI:
 </body>
 </html>"""
         return HTMLResponse(content=html, status_code=200)
+
+    @app.get("/dashboard")
+    def dashboard(req: Request) -> HTMLResponse:
+        return render_dashboard(req, app.state.network, __version__, require_auth)
 
     @app.get("/health")
     def health() -> dict[str, Any]:

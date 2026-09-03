@@ -102,7 +102,7 @@ def test_block_no_auth_required_when_disabled(monkeypatch, tmp_path) -> None:
         with TestClient(app) as c:
             r = c.get("/")
             assert r.status_code == 200
-            assert r.json()["auth_required"] is False
+            assert "bt-network-api" in r.text
 
 
 # ---------------------------------------------------------------------------
@@ -119,9 +119,16 @@ def test_index_with_admin_token(authed_client) -> None:
     c, _ = authed_client
     r = c.get("/")
     assert r.status_code == 200
-    body = r.json()
-    assert body["name"] == "bt-network-api"
-    assert body["auth_required"] is True
+    assert "bt-network-api" in r.text
+    assert "Available Endpoints" in r.text
+
+
+def test_dashboard_with_admin_token(authed_client) -> None:
+    c, _ = authed_client
+    r = c.get("/dashboard")
+    assert r.status_code == 200
+    assert "Stake Dashboard" in r.text
+    assert "Network Overview" in r.text
 
 
 def test_me(authed_client) -> None:
