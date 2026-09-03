@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bt-network-api"
-version = "0.2.0"
-description = "FastAPI REST service exposing Bittensor network data via the Bittensor SDK, with persistent caching"
+version = "0.3.0"
+description = "FastAPI REST service exposing Bittensor network data via the Bittensor SDK, with persistent caching, API-key auth, and per-key query tracking"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
 license = { file = "LICENSE" }
