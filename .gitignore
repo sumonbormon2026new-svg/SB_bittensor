@@ -215,3 +215,4 @@ replicate.yaml
 
 tests/zombienet/bin/**/*
 myscripts/
+.ideavo/project
