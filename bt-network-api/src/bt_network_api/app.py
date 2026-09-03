@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator
 
 from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi.responses import HTMLResponse
 
 import bittensor as bt
 
@@ -89,8 +90,8 @@ def create_app(network: str | None = None, mock: bool | None = None) -> FastAPI:
         return key
 
     @app.get("/")
-    def index(_: db.ApiKey = Depends(_auth)) -> dict[str, Any]:
-        return {
+    def index(_: db.ApiKey = Depends(_auth)) -> HTMLResponse:
+        info = {
             "name": "bt-network-api",
             "version": __version__,
             "network": app.state.network,
@@ -111,6 +112,44 @@ def create_app(network: str | None = None, mock: bool | None = None) -> FastAPI:
                 "/admin/stats",
             ],
         }
+        endpoint_rows = "".join(
+            f'<tr><td class="endpoint"><code>{ep}</code></td></tr>' for ep in info["endpoints"]
+        )
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{info["name"]} v{info["version"]}</title>
+<style>
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 700px; margin: 60px auto; padding: 0 20px; background: #fafafa; color: #222; }}
+  h1 {{ font-size: 1.6rem; font-weight: 600; margin-bottom: 4px; }}
+  .badge {{ display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: 500; margin-bottom: 20px; }}
+  .badge-version {{ background: #e8f5e9; color: #2e7d32; }}
+  .badge-network {{ background: #e3f2fd; color: #1565c0; }}
+  .badge-mock {{ background: {'#fff3e0' if info['mock'] else '#f5f5f5'}; color: {'#e65100' if info['mock'] else '#757575'}; }}
+  .badge-auth {{ background: {'#fce4ec' if info['auth_required'] else '#e8f5e9'}; color: {'#c62828' if info['auth_required'] else '#2e7d32'}; }}
+  table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+  th {{ text-align: left; padding: 8px 12px; border-bottom: 2px solid #ddd; font-size: 0.85rem; color: #666; text-transform: uppercase; letter-spacing: 0.05em; }}
+  td {{ padding: 8px 12px; border-bottom: 1px solid #eee; }}
+  td.endpoint code {{ background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 0.9rem; color: #333; }}
+  .footer {{ margin-top: 40px; font-size: 0.8rem; color: #999; }}
+</style>
+</head>
+<body>
+<h1>{info["name"]}</h1>
+<span class="badge badge-version">v{info["version"]}</span>
+<span class="badge badge-network">{info["network"]}</span>
+<span class="badge badge-mock">mock: {str(info["mock"]).lower()}</span>
+<span class="badge badge-auth">auth: {str(info["auth_required"]).lower()}</span>
+<table>
+  <thead><tr><th>Available Endpoints</th></tr></thead>
+  <tbody>{endpoint_rows}</tbody>
+</table>
+<div class="footer">bt-network-api &mdash; Bittensor network REST API</div>
+</body>
+</html>"""
+        return HTMLResponse(content=html, status_code=200)
 
     @app.get("/health")
     def health() -> dict[str, Any]:
