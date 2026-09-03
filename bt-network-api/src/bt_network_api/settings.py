@@ -14,7 +14,7 @@ def get_default_host() -> str:
 
 
 def get_default_port() -> int:
-    return int(os.getenv("BT_API_PORT", "8091"))
+    return int(os.getenv("PORT") or os.getenv("BT_API_PORT", "8091"))
 
 
 def get_port_from_settings() -> int:

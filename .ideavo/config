@@ -97,6 +97,10 @@
     {
       "name": "Publish App to PyPI",
       "command": "cd bt-network-api && uvx twine upload --non-interactive dist/*"
+    },
+    {
+      "name": "Build App Docker Image",
+      "command": "docker build -t bt-network-api:0.2.0 -f bt-network-api/Dockerfile bt-network-api/"
     }
   ],
   "cleanupFiles": [
